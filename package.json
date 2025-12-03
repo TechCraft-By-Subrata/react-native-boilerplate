@@ -5,7 +5,8 @@
   "scripts": {
     "setup": "node setup.js",
     "android": "react-native run-android --terminal powershell",
-    "ios": "react-native run-ios --simulator=\"iPhone 16 Pro\" --terminal powershell",
+    "ios": "react-native run-ios",
+    "ios:clean": "rm -rf ~/Library/Developer/Xcode/DerivedData && cd ios && rm -rf pods build podfile.lock *.xcworkspace && pod deintegrate && pod install && open NewAppName.xcworkspace",
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest"

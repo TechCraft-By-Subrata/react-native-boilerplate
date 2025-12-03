@@ -149,6 +149,21 @@ function updatePackageJsonName(newProjectName) {
   }
 }
 
+// Function to update app.json name
+function updateAppJsonName(newProjectName) {
+  const appJsonPath = path.join(process.cwd(), 'app.json');
+  if (fs.existsSync(appJsonPath)) {
+    let appJsonContent = fs.readFileSync(appJsonPath, 'utf8');
+    const appJson = JSON.parse(appJsonContent);
+    if (appJson.name !== newProjectName || appJson.displayName !== newProjectName) {
+      appJson.name = newProjectName;
+      appJson.displayName = newProjectName;
+      fs.writeFileSync(appJsonPath, JSON.stringify(appJson, null, 2) + '\n', 'utf8');
+      console.log(`   ✅ Updated app.json name to "${newProjectName}"`);
+    }
+  }
+}
+
 const { projectName, bundleName } = parseArguments();
 
 console.log('⚡ React Native Flash Boilerplate Setup ⚡');
@@ -162,6 +177,8 @@ try {
     renameIOSFoldersAndConfigs(projectName);
     // Update package.json name
     updatePackageJsonName(projectName);
+    // Update app.json name
+    updateAppJsonName(projectName);
     // Optionally, update bundle identifier in Info.plist
     const infoPlistPath = path.join('./ios', projectName, 'Info.plist');
     if (fs.existsSync(infoPlistPath)) {

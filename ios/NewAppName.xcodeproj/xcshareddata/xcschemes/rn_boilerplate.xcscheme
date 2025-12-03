@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "rn_boilerplate.app"
-               BlueprintName = "rn_boilerplate"
-               ReferencedContainer = "container:rn_boilerplate.xcodeproj">
+               BuildableName = "NewAppName.app"
+               BlueprintName = "NewAppName"
+               ReferencedContainer = "container:NewAppName.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "rn_boilerplateTests.xctest"
-               BlueprintName = "rn_boilerplateTests"
-               ReferencedContainer = "container:rn_boilerplate.xcodeproj">
+               BuildableName = "NewAppNameTests.xctest"
+               BlueprintName = "NewAppNameTests"
+               ReferencedContainer = "container:NewAppName.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "rn_boilerplate.app"
-            BlueprintName = "rn_boilerplate"
-            ReferencedContainer = "container:rn_boilerplate.xcodeproj">
+            BuildableName = "NewAppName.app"
+            BlueprintName = "NewAppName"
+            ReferencedContainer = "container:NewAppName.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "rn_boilerplate.app"
-            BlueprintName = "rn_boilerplate"
-            ReferencedContainer = "container:rn_boilerplate.xcodeproj">
+            BuildableName = "NewAppName.app"
+            BlueprintName = "NewAppName"
+            ReferencedContainer = "container:NewAppName.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

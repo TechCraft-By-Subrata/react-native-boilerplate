@@ -20,23 +20,46 @@ function parseArguments() {
   return params;
 }
 
-// Function to rename iOS folders
-function renameIOSFolders(newProjectName) {
+// Function to detect current iOS project name
+function detectCurrentIOSProjectName() {
   const iosPath = './ios';
-  const oldProjectName = 'rn_boilerplate';
-  
+  if (!fs.existsSync(iosPath)) return null;
+  const entries = fs.readdirSync(iosPath);
+  // Look for .xcodeproj folder
+  const xcodeproj = entries.find(e => e.endsWith('.xcodeproj'));
+  if (xcodeproj) {
+    return xcodeproj.replace('.xcodeproj', '');
+  }
+  // Fallback: look for main folder with AppDelegate.swift
+  for (const entry of entries) {
+    const appDelegatePath = path.join(iosPath, entry, 'AppDelegate.swift');
+    if (fs.existsSync(appDelegatePath)) {
+      return entry;
+    }
+  }
+  return null;
+}
+
+// Function to rename iOS folders and update config files
+function renameIOSFoldersAndConfigs(newProjectName) {
+  const iosPath = './ios';
+  const oldProjectName = detectCurrentIOSProjectName();
+  if (!oldProjectName) {
+    console.log('⚠️  Could not detect current iOS project name. Skipping renaming...');
+    return;
+  }
+
   if (!fs.existsSync(iosPath)) {
     console.log('⚠️  iOS folder not found, skipping iOS folder renaming...');
     return;
   }
 
   try {
-    console.log('📁 Renaming iOS project folders...');
-    
+    console.log(`📁 Renaming iOS project folders from "${oldProjectName}" to "${newProjectName}"...`);
+
     // Rename the main iOS project folder
     const oldFolderPath = path.join(iosPath, oldProjectName);
     const newFolderPath = path.join(iosPath, newProjectName);
-    
     if (fs.existsSync(oldFolderPath)) {
       fs.renameSync(oldFolderPath, newFolderPath);
       console.log(`   ✅ Renamed ${oldProjectName} folder to ${newProjectName}`);
@@ -45,7 +68,6 @@ function renameIOSFolders(newProjectName) {
     // Rename the .xcodeproj folder
     const oldXcodeProjPath = path.join(iosPath, `${oldProjectName}.xcodeproj`);
     const newXcodeProjPath = path.join(iosPath, `${newProjectName}.xcodeproj`);
-    
     if (fs.existsSync(oldXcodeProjPath)) {
       fs.renameSync(oldXcodeProjPath, newXcodeProjPath);
       console.log(`   ✅ Renamed ${oldProjectName}.xcodeproj to ${newProjectName}.xcodeproj`);
@@ -54,7 +76,6 @@ function renameIOSFolders(newProjectName) {
     // Rename the .xcworkspace folder if it exists
     const oldWorkspacePath = path.join(iosPath, `${oldProjectName}.xcworkspace`);
     const newWorkspacePath = path.join(iosPath, `${newProjectName}.xcworkspace`);
-    
     if (fs.existsSync(oldWorkspacePath)) {
       fs.renameSync(oldWorkspacePath, newWorkspacePath);
       console.log(`   ✅ Renamed ${oldProjectName}.xcworkspace to ${newProjectName}.xcworkspace`);
@@ -62,42 +83,69 @@ function renameIOSFolders(newProjectName) {
 
     console.log('📝 Updating iOS configuration files...');
 
-    // Update AppDelegate.swift withModuleName
-    const appDelegatePath = path.join(iosPath, newProjectName, 'AppDelegate.swift');
-    if (fs.existsSync(appDelegatePath)) {
-      let appDelegateContent = fs.readFileSync(appDelegatePath, 'utf8');
-      appDelegateContent = appDelegateContent.replace(
-        `withModuleName: "${oldProjectName}"`,
-        `withModuleName: "${newProjectName}"`
-      );
-      fs.writeFileSync(appDelegatePath, appDelegateContent, 'utf8');
-      console.log(`   ✅ Updated AppDelegate.swift withModuleName to "${newProjectName}"`);
+    // Update all references in iOS config files
+    const exts = ['.swift', '.plist', '.storyboard', '.xcscheme', '.pbxproj'];
+    function updateReferencesInFile(filePath) {
+      let content = fs.readFileSync(filePath, 'utf8');
+      const updated = content.replace(new RegExp(oldProjectName, 'g'), newProjectName);
+      if (updated !== content) {
+        fs.writeFileSync(filePath, updated, 'utf8');
+        console.log(`   ✅ Updated references in ${filePath}`);
+      }
     }
+    function walkDir(dir) {
+      fs.readdirSync(dir).forEach(file => {
+        const fullPath = path.join(dir, file);
+        if (fs.statSync(fullPath).isDirectory()) {
+          walkDir(fullPath);
+        } else if (exts.some(ext => file.endsWith(ext))) {
+          updateReferencesInFile(fullPath);
+        }
+      });
+    }
+    walkDir(iosPath);
 
     // Rename and update .xcscheme file
     const oldSchemePath = path.join(iosPath, `${newProjectName}.xcodeproj`, 'xcshareddata', 'xcschemes', `${oldProjectName}.xcscheme`);
     const newSchemePath = path.join(iosPath, `${newProjectName}.xcodeproj`, 'xcshareddata', 'xcschemes', `${newProjectName}.xcscheme`);
-    
     if (fs.existsSync(oldSchemePath)) {
-      // Read and update scheme file content
       let schemeContent = fs.readFileSync(oldSchemePath, 'utf8');
-      
-      // Replace all references to old project name in the scheme file
       schemeContent = schemeContent.replace(new RegExp(oldProjectName, 'g'), newProjectName);
-      
-      // Write updated content to new scheme file
       fs.writeFileSync(newSchemePath, schemeContent, 'utf8');
-      
-      // Remove old scheme file
       fs.unlinkSync(oldSchemePath);
-      
       console.log(`   ✅ Renamed and updated ${oldProjectName}.xcscheme to ${newProjectName}.xcscheme`);
+    }
+
+    // Update all occurrences of old project name in Podfile
+    const podfilePath = path.join(iosPath, 'Podfile');
+    if (fs.existsSync(podfilePath)) {
+      let podfileContent = fs.readFileSync(podfilePath, 'utf8');
+      const oldNameRegex = new RegExp(oldProjectName, 'g');
+      if (oldNameRegex.test(podfileContent)) {
+        podfileContent = podfileContent.replace(oldNameRegex, newProjectName);
+        fs.writeFileSync(podfilePath, podfileContent, 'utf8');
+        console.log(`   ✅ Updated all Podfile references to '${newProjectName}'`);
+      }
     }
 
     console.log('✅ iOS folders and configuration files updated successfully!');
   } catch (error) {
     console.error('❌ Error renaming iOS folders:', error.message);
     throw error;
+  }
+}
+
+// Function to update package.json name
+function updatePackageJsonName(newProjectName) {
+  const pkgPath = path.join(process.cwd(), 'package.json');
+  if (fs.existsSync(pkgPath)) {
+    let pkgContent = fs.readFileSync(pkgPath, 'utf8');
+    const pkgJson = JSON.parse(pkgContent);
+    if (pkgJson.name !== newProjectName) {
+      pkgJson.name = newProjectName;
+      fs.writeFileSync(pkgPath, JSON.stringify(pkgJson, null, 2), 'utf8');
+      console.log(`   ✅ Updated package.json name to "${newProjectName}"`);
+    }
   }
 }
 
@@ -110,11 +158,51 @@ try {
   // Rename project if project name and bundle name are provided
   if (projectName && bundleName) {
     console.log(`🏷️  Renaming project to "${projectName}" with bundle "${bundleName}"...`);
-    execSync(`npx react-native-rename "${projectName}" -b ${bundleName}`, { stdio: 'inherit' });
-    console.log('✅ Project renamed successfully!');
+    // Directly rename iOS folders and update config files
+    renameIOSFoldersAndConfigs(projectName);
+    // Update package.json name
+    updatePackageJsonName(projectName);
+    // Optionally, update bundle identifier in Info.plist
+    const infoPlistPath = path.join('./ios', projectName, 'Info.plist');
+    if (fs.existsSync(infoPlistPath)) {
+      let infoPlistContent = fs.readFileSync(infoPlistPath, 'utf8');
+      infoPlistContent = infoPlistContent.replace(/com\.\w+\.\w+/g, bundleName);
+      fs.writeFileSync(infoPlistPath, infoPlistContent, 'utf8');
+      console.log(`   ✅ Updated Info.plist bundle identifier to "${bundleName}"`);
+    }
+
+    // Delete Podfile.lock, Pods directory, and vendor/bundle for a clean install
+    const podfileLockPath = path.join('./ios', 'Podfile.lock');
+    const podsDirPath = path.join('./ios', 'Pods');
+    const vendorBundlePath = path.join('./vendor/bundle');
     
-    // Rename iOS folders after react-native-rename
-    renameIOSFolders(projectName);
+    // Recursively delete directory helper function
+    function deleteFolderRecursive(folderPath) {
+      if (fs.existsSync(folderPath)) {
+        fs.readdirSync(folderPath).forEach((file) => {
+          const curPath = path.join(folderPath, file);
+          if (fs.lstatSync(curPath).isDirectory()) {
+            deleteFolderRecursive(curPath);
+          } else {
+            fs.unlinkSync(curPath);
+          }
+        });
+        fs.rmdirSync(folderPath);
+      }
+    }
+    
+    if (fs.existsSync(podfileLockPath)) {
+      fs.unlinkSync(podfileLockPath);
+      console.log('   ✅ Deleted ios/Podfile.lock');
+    }
+    if (fs.existsSync(podsDirPath)) {
+      deleteFolderRecursive(podsDirPath);
+      console.log('   ✅ Deleted ios/Pods directory');
+    }
+    if (fs.existsSync(vendorBundlePath)) {
+      deleteFolderRecursive(vendorBundlePath);
+      console.log('   ✅ Deleted vendor/bundle directory');
+    }
   } else if (projectName || bundleName) {
     console.log('⚠️  Warning: Both --project-name and --bundle-name are required for renaming.');
     console.log('   Usage: yarn setup --project-name "YourAppName" --bundle-name com.yourcompany.yourapp');

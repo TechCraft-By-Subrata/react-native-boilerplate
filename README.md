@@ -68,9 +68,10 @@ src/
 
 **Step 1: Clone the repository**
 ```bash
-git clone https://github.com/phosimurg/rn-flash-boilerplate.git
-cd rn_boilerplate
+git clone https://github.com/TechCraft-By-Subrata/react-native-boilerplate.git yourproject
+cd yourproject
 ```
+
 
 **Step 2: Setup and rename your project** ⚡
 ```bash
@@ -78,11 +79,13 @@ yarn setup --project-name "YourAppName" --bundle-name com.yourcompany.yourappnam
 ```
 
 That's it! 🎉 This single command will:
-- ✅ Rename your project from "rn_boilerplate" to "YourAppName"
-- ✅ Update all bundle identifiers and configurations
+- ✅ Automatically detect and rename your iOS project, folders, and configs
+- ✅ Update all bundle identifiers and configuration files
+- ✅ Update Podfile target and all references
+- ✅ Clean up Podfile.lock, Pods, and vendor/bundle for a fresh install
 - ✅ Install all dependencies
 - ✅ Link font assets automatically
-- ✅ Configure iOS pods
+- ✅ Configure iOS pods (no need for react-native-rename)
 - ✅ Set up everything for immediate development
 
 **Step 3: Run your app**
@@ -115,10 +118,9 @@ npx react-native-asset
 cd ios && bundle install && bundle exec pod install && cd ..
 ```
 
-**Then rename manually when ready:**
-```bash
-npx react-native-rename "YourAppName" -b com.yourcompany.yourappname
-```
+
+**Manual renaming is no longer required!**
+The setup script now handles all renaming and configuration automatically. No need for `react-native-rename`.
 
 ### Development Commands
 
@@ -253,18 +255,19 @@ Add or edit translation keys in the locale files located in `src/i18n/locales/`.
 
 ## Project Setup
 
+
 ### Setup Script
 
-The boilerplate includes a convenient setup script that automates the project initialization process and supports project renaming. To use it, add this script to your package.json:
+The boilerplate includes a convenient setup script that automates project initialization and renaming. Add this script to your package.json:
 
 ```json
 "scripts": {
-  "setup": "node setup.js",
-  // other scripts...
+    "setup": "node setup.js",
+    // other scripts...
 }
 ```
 
-The enhanced `setup.js` file supports command line arguments for project renaming:
+The enhanced `setup.js` supports command line arguments for project renaming:
 
 ```bash
 # Setup with project renaming
@@ -274,24 +277,27 @@ yarn setup --project-name "YourAppName" --bundle-name com.yourcompany.yourapp
 yarn setup
 ```
 
-The setup script includes:
-- Command line argument parsing for project renaming
-- Automatic react-native-rename execution
+The setup script now includes:
+- Automatic detection and renaming of your iOS project, folders, and configs
+- Podfile target and reference updates
+- Cleanup of Podfile.lock, Pods, and vendor/bundle for a fresh install
 - Dependency installation
 - Font asset linking
 - iOS pod installation
 - Complete project configuration
+
+No need for `react-native-rename`—everything is handled natively.
 
 Also, create a `react-native.config.js` file in your project root:
 
 ```javascript
 // react-native.config.js
 module.exports = {
-  project: {
-    ios: {},
-    android: {},
-  },
-  assets: ['./src/assets/fonts/'],
+    project: {
+        ios: {},
+        android: {},
+    },
+    assets: ['./src/assets/fonts/'],
 };
 ```
 

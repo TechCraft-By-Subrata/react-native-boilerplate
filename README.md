@@ -348,4 +348,10 @@ Created by Ahmet YILDIZ - phosimurg
 
 ---
 
+### Special Thanks
+
+This boilerplate is inspired by and based on the excellent work in the original repository:
+
+[phosimurg/rn-flash-boilerplate](https://github.com/phosimurg/rn-flash-boilerplate)
+
 Feel free to contribute, open issues, or suggest improvements!
